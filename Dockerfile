@@ -1,4 +1,4 @@
-FROM python:3.4
+FROM python:3.12
 
 # Set up Python
 RUN pip3 install --upgrade pip

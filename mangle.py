@@ -1,11 +1,7 @@
+import asyncio
 import random
-import configparser
 from enum import Enum
 import googletrans
-
-# get config
-config = configparser.ConfigParser()
-config.read("babble_bot.cfg")
 
 
 class MangleMethod(Enum):
@@ -26,9 +22,8 @@ class MangleMethod(Enum):
 
 
 class Mangle:
-    def __init__(self, client_key, language, low, high, language_blacklist):
+    def __init__(self, language, low, high, language_blacklist):
         self.language = language
-        self.translator = googletrans.Translator()
         self.languages = set(googletrans.LANGUAGES.keys()) - language_blacklist
         self.low = low
         self.high = high
@@ -39,7 +34,7 @@ class Mangle:
             raise ValueError("No language list given.")
         if method is None:
             method = random.sample(
-                set(MangleMethod) - set([MangleMethod.manual]), 1)[0]
+                list(set(MangleMethod) - set([MangleMethod.manual])), 1)[0]
         if times < 0:
             raise ValueError("Parameter times must be greater than 0.")
         if times == 0:
@@ -53,38 +48,18 @@ class Mangle:
             language_list.append(self.language)
             for i in range(int(times / 2)):
                 language_list.extend(
-                    [random.sample(self.languages, 1)[0], self.language])
+                    [random.sample(list(self.languages), 1)[0], self.language])
         elif method == MangleMethod.straight:
             language_list = []
             language_list.append(self.language)
-            language_list.extend(random.sample(self.languages, times))
+            language_list.extend(random.sample(list(self.languages), times))
             language_list.append(self.language)
         else:
             raise NotImplementedError(
                 "MangleMethod {} not implemented.".format(method))
 
-        all_messages = [message_text]
-        for i in range(len(language_list)):
-            if i == 0:
-                continue
-            try:
-                #text = self.translator.translate(all_messages[i - 1],
-                #                                  from_lang = language_list[i - 1],
-                #				  to_lang = language_list[i])
-                params = {
-                    'text': all_messages[i - 1],
-                    'from': language_list[i - 1],
-                    'to': language_list[i],
-                    'contentType': 'text/plain',
-                    'category': 'general',
-                }
-                text = self.translator.translate(params['text'],
-                                                 src=params['from'],
-                                                 dest=params['to']).text
-                all_messages.append(text)
-            except Exception as e:
-                all_messages = False
-                break
+        all_messages = asyncio.run(
+            self._translate_path(message_text, language_list))
 
         message_info = {
             'method': str(method),
@@ -93,3 +68,23 @@ class Mangle:
         }
 
         return message_info
+
+    async def _translate_path(self, message_text, language_list):
+        all_messages = [message_text]
+        async with googletrans.Translator(timeout=15.0) as translator:
+            for i in range(len(language_list)):
+                if i == 0:
+                    continue
+                try:
+                    text = (await translator.translate(
+                        all_messages[i - 1],
+                        src=language_list[i - 1],
+                        dest=language_list[i])).text
+                    all_messages.append(text)
+                except Exception as e:
+                    print("translate failed {} -> {}: {}".format(
+                        language_list[i - 1], language_list[i], e))
+                    all_messages = False
+                    break
+
+        return all_messages
