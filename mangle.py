@@ -3,6 +3,10 @@ import random
 from enum import Enum
 import googletrans
 
+# Unofficial Translate endpoint throttles datacenter IPs when hops are
+# back-to-back. Pause between calls; do not sleep before the first hop.
+TRANSLATE_DELAY_SECONDS = 1.0
+
 
 class MangleMethod(Enum):
     flipflop = 1
@@ -75,6 +79,8 @@ class Mangle:
             for i in range(len(language_list)):
                 if i == 0:
                     continue
+                if i > 1:
+                    await asyncio.sleep(TRANSLATE_DELAY_SECONDS)
                 try:
                     text = (await translator.translate(
                         all_messages[i - 1],
