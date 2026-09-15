@@ -1,0 +1,10 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.pyo
+README.md
+LICENSE
+.dockerignore
+.gitignore
+argos_packages

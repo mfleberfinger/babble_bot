@@ -61,3 +61,7 @@ target/
 #Ipython Notebook
 .ipynb_checkpoints
 babble_bot.cfg
+
+# Argos Translate language packages (downloaded; several GB)
+argos_packages/*
+!argos_packages/.gitkeep

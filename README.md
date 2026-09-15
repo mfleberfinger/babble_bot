@@ -6,7 +6,26 @@ it's that babble boy
 
 ## Running
 
-Now using Docker to make life easier!
+Translation uses [Argos Translate](https://github.com/argosopentech/argos-translate) offline. Official language packages are several GB and live in `argos_packages/` (gitignored).
+
+### Local
+
+1. `git clone https://github.com/mfleberfinger/babble_bot && cd babble_bot`
+1. Get a Telegram Bot API Key by making a new bot using Telegram's BotFather.
+1. Rename the config example to `babble_bot.cfg` and copy in your API key.
+1. Install dependencies and download language packages:
+   ```bash
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   pip install --no-deps argostranslate==1.11.0
+   python3 download_argos_packages.py
+   ```
+1. `python3 babble_bot.py`
+
+### Docker
+
+Language packages stay on the host in `argos_packages/` and are bind-mounted into the container. Populate that folder first (see Local above). The image does not contain the packages.
 
 1. `git clone https://github.com/mfleberfinger/babble_bot && cd babble_bot`
 1. Get a Telegram Bot API Key by making a new bot using Telegram's BotFather.
@@ -15,7 +34,7 @@ Now using Docker to make life easier!
    ```bash
    docker build -t babble-bot .
    ```
-1. Run the Docker image:
+1. Run the Docker image, mounting the host packages directory:
    ```bash
-   docker run -it babble-bot
+   docker run -it -v "$PWD/argos_packages:/root/argos_packages:ro" babble-bot
    ```
