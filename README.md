@@ -27,14 +27,18 @@ Translation uses [Argos Translate](https://github.com/argosopentech/argos-transl
 
 Language packages stay on the host in `argos_packages/` and are bind-mounted into the container. Populate that folder first (see Local above). The image does not contain the packages.
 
+The bot API key is not copied into the image. Pass it only when you start the container, as the `TELEGRAM_TOKEN` environment variable. Do not pass it as a build argument.
+
 1. `git clone https://github.com/mfleberfinger/babble_bot && cd babble_bot`
 1. Get a Telegram Bot API Key by making a new bot using Telegram's BotFather.
-1. Rename the config example to `babble_bot.cfg` and copy in your API key.
 1. Build the Docker image:
    ```bash
    docker build -t babble-bot .
    ```
-1. Run the Docker image, mounting the host packages directory:
+1. Run the Docker image, passing the key and mounting the host packages directory:
    ```bash
-   docker run -it -v "$PWD/argos_packages:/root/argos_packages:ro" babble-bot
+   docker run -it \
+     -e TELEGRAM_TOKEN="your-telegram-bot-api-key" \
+     -v "$PWD/argos_packages:/root/argos_packages:ro" \
+     babble-bot
    ```

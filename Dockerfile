@@ -8,9 +8,11 @@ RUN pip3 install --no-deps argostranslate==1.11.0 && pip3 install -r requirement
 
 WORKDIR /root
 COPY ./argos_setup.py ./argos_setup.py
-COPY ./babble_bot.cfg ./babble_bot.cfg
 COPY ./babble_bot.py ./babble_bot.py
 COPY ./mangle.py ./mangle.py
+
+# Do not COPY babble_bot.cfg. The bot token is a runtime env var
+# (TELEGRAM_TOKEN) so it is not stored in image layers.
 
 # Language packages live on the host and must be bind-mounted at
 # /root/argos_packages (see README). Do not COPY them into the image.

@@ -2,17 +2,34 @@ import telebot
 from mangle import Mangle
 import random
 import configparser
+import os
 from datetime import datetime
 import re
 from time import time
 from mangle import MangleMethod
 
-# get config
-config = configparser.ConfigParser()
-config.read("babble_bot.cfg")
+
+def load_telegram_token():
+    """Token from TELEGRAM_TOKEN, else babble_bot.cfg. Never baked into an image."""
+    token = os.environ.get("TELEGRAM_TOKEN", "").strip()
+    if token:
+        return token
+
+    config = configparser.ConfigParser()
+    config.read("babble_bot.cfg")
+    if config.has_option("telegram_bot_api", "telegram_token"):
+        token = config.get("telegram_bot_api", "telegram_token").strip()
+    if token:
+        return token
+
+    raise SystemExit(
+        "Telegram bot API key not set. "
+        "Pass TELEGRAM_TOKEN (Docker) or set telegram_token in babble_bot.cfg."
+    )
+
 
 # create bot with key
-bot = telebot.TeleBot(config['telegram_bot_api']['telegram_token'].strip())
+bot = telebot.TeleBot(load_telegram_token())
 me = bot.get_me()
 bot_username = me.username
 bot_mention = "@{}".format(bot_username).lower()
