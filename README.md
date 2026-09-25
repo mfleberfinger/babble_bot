@@ -42,3 +42,4 @@ The bot API key is not copied into the image. Pass it only when you start the co
      -v "$PWD/argos_packages:/root/argos_packages:ro" \
      babble-bot
    ```
+   For convenience, a script, like `run.sh`, in this directory, can be used.
